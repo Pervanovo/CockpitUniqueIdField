@@ -13,7 +13,8 @@ $app->on("collections.save.before", function ($collectionName, &$entry, $isUpdat
     if ($field['type'] == 'uniqueid') {
       $fieldName = $field['name'];
       if (!$entry[$fieldName]) {
-        $entry[$fieldName] = unusedUniqId($app, $collectionName, $fieldName);
+        $length = is_int($field['options']['length']) ? $field['options']['length'] : 8;
+        $entry[$fieldName] = unusedUniqId($app, $collectionName, $fieldName, $length);
       }
     }
   }
@@ -22,9 +23,9 @@ $app->on("collections.save.before", function ($collectionName, &$entry, $isUpdat
 /*
  * Generate unused uniqId using uniqidReal
  */
-function unusedUniqId($app, $collectionName, $fieldName) {
+function unusedUniqId($app, $collectionName, $fieldName, $length) {
   do {
-    $uniqId = betterUniqId();
+    $uniqId = betterUniqId($length);
     $criteria = [
       $fieldName => $uniqId
     ];
@@ -36,7 +37,7 @@ function unusedUniqId($app, $collectionName, $fieldName) {
 /*
  * Generates a uniqId not dependant on current time
  */
-function betterUniqId($length = 8) {
+function betterUniqId($length) {
   if (function_exists("random_bytes")) {
     $bytes = random_bytes(ceil($length / 2));
   } elseif (function_exists("openssl_random_pseudo_bytes")) {
