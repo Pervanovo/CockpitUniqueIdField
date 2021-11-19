@@ -6,16 +6,29 @@
         </div>
     </div>
     <script>
-        var $this = this;
         this.value = "";
 
         this.on('mount', function () {
-           $this.update();
+            this.update();
         });
 
-        this.$updateValue = function(value) {
-            this.value = value;
+        $updateValue(value) {
+            var entry = this.getEntry();
+            if (entry && entry._id) {
+                this.value = value;
+            } else {
+                this.$setValue(null);
+            }
             this.update();
-        }.bind(this);
+        }
+
+        getEntry() {
+            var parent = this.$boundTo;
+            while (!parent.entry) {
+                parent = parent.$boundTo;
+                if (!parent) return null;
+            }
+            return parent.entry;
+        }
     </script>
 </field-uniqueid>
