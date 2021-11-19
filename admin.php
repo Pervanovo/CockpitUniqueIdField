@@ -13,7 +13,7 @@ $app->on("collections.save.before", function ($collectionName, &$entry, $isUpdat
   foreach ($collection['fields'] as $field) {
     $fieldName = $field['name'];
     if ($field['type'] === 'uniqueid') {
-      if (!$entry[$fieldName]) {
+      if (!$entry[$fieldName] || !$isUpdate) {
         $length = is_int($field['options']['length']) ? $field['options']['length'] : $defaultLength;
         $entry[$fieldName] = unusedUniqId($app, $collectionName, $fieldName, $length);
       }
@@ -25,7 +25,7 @@ $app->on("collections.save.before", function ($collectionName, &$entry, $isUpdat
           foreach ($setFields as $setField) {
             if ($setField['type'] === "uniqueid") {
               $setFieldName = $setField['name'];
-              if (!$repeaterEntry['value'][$setFieldName]) {
+              if (!$repeaterEntry['value'][$setFieldName] || !$isUpdate) {
                 $length = $defaultLength;
                 if ($setField['options'] && is_int($setField['options']['length'])) {
                   $length = $setField['options']['length'];
@@ -40,7 +40,8 @@ $app->on("collections.save.before", function ($collectionName, &$entry, $isUpdat
   }
 });
 
-function repeaterSetFieldValues($repeaterEntries, $setFieldName) {
+function repeaterSetFieldValues($repeaterEntries, $setFieldName)
+{
   $repeaterEntriesValues = [];
   foreach ($repeaterEntries as $repeaterEntry) {
     $repeaterEntriesValues[] = $repeaterEntry['value'];
@@ -57,7 +58,8 @@ function repeaterSetFieldValues($repeaterEntries, $setFieldName) {
 /*
  * Generate unused uniqId using betterUniqId
  */
-function unusedUniqId($app, $uniqueAcross, $fieldName, $length) {
+function unusedUniqId($app, $uniqueAcross, $fieldName, $length)
+{
   $uniqId = null;
   if (is_string($uniqueAcross) && is_string($fieldName)) {
     $collectionName = $uniqueAcross;
@@ -68,7 +70,7 @@ function unusedUniqId($app, $uniqueAcross, $fieldName, $length) {
       ];
       $exists = $app->module('collections')->count($collectionName, $criteria) > 0;
     } while ($exists);
-  } else if(is_array($uniqueAcross)) {
+  } else if (is_array($uniqueAcross)) {
     do {
       $uniqId = betterUniqId($length);
     } while (in_array($uniqId, $uniqueAcross));
@@ -79,7 +81,8 @@ function unusedUniqId($app, $uniqueAcross, $fieldName, $length) {
 /*
  * Generates a uniqId not dependant on current time
  */
-function betterUniqId($length) {
+function betterUniqId($length)
+{
   if (function_exists("random_bytes")) {
     $bytes = random_bytes(ceil($length / 2));
   } elseif (function_exists("openssl_random_pseudo_bytes")) {
